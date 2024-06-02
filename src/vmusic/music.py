@@ -16,14 +16,15 @@ def initialize_pygame(filename):
     pygame.mixer.music.load(filename)
 
 
-def set_backlight_brightness(backlight_level, caplock_level, screen_level):
+def set_backlight_brightness(backlight_level, caplock_level, screen_level, change_screen):
     brightness_path = "/sys/class/leds/dell::kbd_backlight/brightness"
     caplock_path = "/sys/class/leds/input3::capslock/brightness"
     screen_path = "/sys/class/backlight/intel_backlight/brightness"
 
     os.system(f"echo {backlight_level} | sudo tee {brightness_path} > /dev/null &")
     os.system(f"echo {caplock_level} | sudo tee {caplock_path} > /dev/null &")
-    os.system(f"echo {screen_level} | sudo tee {screen_path} > /dev/null &")
+    if change_screen:
+        os.system(f"echo {screen_level} | sudo tee {screen_path} > /dev/null &")
 
 
 def load_audio_file(filename):
@@ -49,7 +50,7 @@ def stop_music():
     pygame.mixer.quit()
 
 
-def process_audio(filename):
+def process_audio(filename, change_screen):
     y, sr, rms, times, total_duration = load_audio_file(filename)
 
     # Create a timer that triggers at regular intervals
@@ -75,7 +76,7 @@ def process_audio(filename):
 
             # Set backlight brightness
             start_time_backlight_update = time.time()
-            set_backlight_brightness(backlight_level, caplock_level, screen_level)
+            set_backlight_brightness(backlight_level, caplock_level, screen_level, change_screen)
             end_time_backlight_update = time.time()
             print(
                 f"Time: {timer:.2f}, timer_interval: {timer_interval:.2f}, \

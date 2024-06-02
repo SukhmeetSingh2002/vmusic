@@ -28,6 +28,9 @@ def main():
     parser.add_argument(
         "--end", type=int, default=30, help="The end second for trimming"
     )
+    parser.add_argument(
+        "-c", "--change-screen", action="store_true", help="Change the screen brightness"
+    )
 
     args = parser.parse_args()
 

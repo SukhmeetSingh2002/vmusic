@@ -1,0 +1,32 @@
+# Ignore Python build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Ignore Python distribution artifacts
+dist/
+build/
+*.egg-info/
+.coverage
+.pytest_cache/
+.venv/
+
+trimmed_music/
+plots/
+music2.py
+music3.wav
+test.c
+test.sh
+test2.py
+
+# Ignore IDE and editor files
+.vscode/
+*.swp
+*.swo
+*.swn
+*.bak
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db

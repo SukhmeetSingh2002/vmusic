@@ -3,6 +3,7 @@ import sys
 import argparse
 from vmusic.trim import trim_audio
 from vmusic.music import run_visualizer
+from vmusic import __version__
 
 
 def main():
@@ -12,6 +13,9 @@ def main():
         sys.exit(1)
 
     parser = argparse.ArgumentParser(description="Audio Visualizer")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
     parser.add_argument(
         "--file", type=str, help="The audio file to visualize", required=True
     )

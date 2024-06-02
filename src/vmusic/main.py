@@ -33,13 +33,14 @@ def main():
     )
 
     args = parser.parse_args()
+    change_screen = args.change_screen
 
     if args.trim:
         filename = trim_audio(args.file, args.start, args.end)
     else:
         filename = args.file
 
-    run_visualizer(filename)
+    run_visualizer(filename, change_screen)
 
 
 if __name__ == "__main__":

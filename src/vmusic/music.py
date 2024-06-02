@@ -117,10 +117,10 @@ def process_audio(filename, change_screen):
         stop_music()
 
 
-def run_visualizer(filename):
+def run_visualizer(filename, change_screen):
     print(f"Running visualizer for {filename}")
     initialize_pygame(filename)
     # Create and start a new thread for the audio processing
-    audio_thread = threading.Thread(target=process_audio, args=(filename,))
+    audio_thread = threading.Thread(target=process_audio, args=(filename, change_screen))
     audio_thread.start()
     audio_thread.join()

@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+
 from vmusic.trim import trim_audio
 from vmusic.music import run_visualizer
 from vmusic import __version__
@@ -29,7 +30,10 @@ def main():
         "--end", type=int, default=30, help="The end second for trimming"
     )
     parser.add_argument(
-        "-c", "--change-screen", action="store_true", help="Change the screen brightness"
+        "-c",
+        "--change-screen",
+        action="store_true",
+        help="Change the screen brightness",
     )
 
     args = parser.parse_args()

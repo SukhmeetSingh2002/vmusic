@@ -1,9 +1,12 @@
+import platform
 import numpy as np
-import pygame
 import time
-import threading
 import librosa
 import os
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+
+import pygame  # noqa
 
 # Constants
 CHUNK = 1024
@@ -16,10 +19,44 @@ def initialize_pygame(filename):
     pygame.mixer.music.load(filename)
 
 
-def set_backlight_brightness(backlight_level, caplock_level, screen_level, change_screen):
+def get_initial_brightness():
     brightness_path = "/sys/class/leds/dell::kbd_backlight/brightness"
     caplock_path = "/sys/class/leds/input3::capslock/brightness"
     screen_path = "/sys/class/backlight/intel_backlight/brightness"
+
+    # Read the initial brightness values
+    with open(brightness_path, "r") as f:
+        initial_backlight = int(f.read().strip())
+    with open(caplock_path, "r") as f:
+        initial_caplock = int(f.read().strip())
+    with open(screen_path, "r") as f:
+        initial_screen = int(f.read().strip())
+
+    return initial_backlight, initial_caplock, initial_screen
+
+
+def set_backlight_brightness(
+    backlight_level, caplock_level, screen_level, change_screen
+):
+    # Check if the current operating system is Linux
+    if platform.system() != "Linux":
+        # print("Brightness change is not supported on this operating system.")
+        return
+
+    brightness_path = "/sys/class/leds/dell::kbd_backlight/brightness"
+    caplock_path = "/sys/class/leds/input3::capslock/brightness"
+    screen_path = "/sys/class/backlight/intel_backlight/brightness"
+
+    # Check if the files exist
+    if not os.path.exists(brightness_path):
+        print(f"The file {brightness_path} does not exist.")
+        return
+    if not os.path.exists(caplock_path):
+        print(f"The file {caplock_path} does not exist.")
+        return
+    if change_screen and not os.path.exists(screen_path):
+        print(f"The file {screen_path} does not exist.")
+        return
 
     os.system(f"echo {backlight_level} | sudo tee {brightness_path} > /dev/null &")
     os.system(f"echo {caplock_level} | sudo tee {caplock_path} > /dev/null &")
@@ -51,6 +88,9 @@ def stop_music():
 
 
 def process_audio(filename, change_screen):
+    # Get the initial brightness values
+    initial_backlight, initial_caplock, initial_screen = get_initial_brightness()
+
     y, sr, rms, times, total_duration = load_audio_file(filename)
 
     # Create a timer that triggers at regular intervals
@@ -76,12 +116,13 @@ def process_audio(filename, change_screen):
 
             # Set backlight brightness
             start_time_backlight_update = time.time()
-            set_backlight_brightness(backlight_level, caplock_level, screen_level, change_screen)
+            set_backlight_brightness(
+                backlight_level, caplock_level, screen_level, change_screen
+            )
             end_time_backlight_update = time.time()
             print(
-                f"Time: {timer:.2f}, timer_interval: {timer_interval:.2f}, \
-                Energy: {rms[i]:.4f}, Time taken to update backlight: \
-                {end_time_backlight_update - start_time_backlight_update:.4f} seconds",
+                f"Time: {timer:.2f}, Energy: {rms[i]:.4f}, Time taken to update:",
+                f"{end_time_backlight_update - start_time_backlight_update:.4f} seconds",
                 "count_of_updates: ",
                 count_of_updates,
                 end="\r",
@@ -116,11 +157,14 @@ def process_audio(filename, change_screen):
         # Clean up
         stop_music()
 
+        # Reset the brightness values to their initial state
+        print("Reseting brightness values")
+        set_backlight_brightness(
+            initial_backlight, initial_caplock, initial_screen, change_screen
+        )
+
 
 def run_visualizer(filename, change_screen):
     print(f"Running visualizer for {filename}")
     initialize_pygame(filename)
-    # Create and start a new thread for the audio processing
-    audio_thread = threading.Thread(target=process_audio, args=(filename, change_screen))
-    audio_thread.start()
-    audio_thread.join()
+    process_audio(filename, change_screen)
